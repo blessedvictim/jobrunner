@@ -8,26 +8,36 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"github.com/robfig/cron/v3"
 )
 
+type IJob interface {
+	Run() error
+}
+
 type Job struct {
-	Name    string
-	inner   cron.Job
-	status  uint32
-	Status  string
-	Latency string
+	inner  IJob
+	status uint32
+
 	running sync.Mutex
+
+	// web
+	Name       string
+	Status     string
+	Latency    string
+	JobEntryID int
 }
 
 const UNNAMED = "(unnamed)"
 
-func New(job cron.Job) *Job {
-	name := reflect.TypeOf(job).Name()
-	if name == "Func" {
-		name = UNNAMED
+func New(name string, job IJob) *Job {
+	jobName := name
+	if jobName == "" {
+		jobName := reflect.TypeOf(job).Name()
+		if jobName == "Func" {
+			jobName = UNNAMED
+		}
 	}
+
 	return &Job{
 		Name:  name,
 		inner: job,

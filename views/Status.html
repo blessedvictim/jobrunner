@@ -45,7 +45,7 @@ th {
 <h1>JobRunner Status Report</h1>
 
 <table>
-	<tr><th>ID</th><th>Name</th><th>Status</th><th>Last run</th><th>Next run</th><th>Latency</th></tr>
+	<tr><th>ID</th><th>Name</th><th>Status</th><th>Last run</th><th>Next run</th><th>Latency</th><th>Entry ID</th></tr>
 {{range .}}
 
 	<tr>
@@ -55,6 +55,7 @@ th {
 		<td>{{if not .Prev.IsZero}}{{.Prev.Format "2006-01-02 15:04:05"}}{{end}}</td>
 		<td>{{if not .Next.IsZero}}{{.Next.Format "2006-01-02 15:04:05"}}{{end}}</td>
 		<td>{{.JobRunner.Latency}}</td>
+		<td>{{.JobRunner.JobEntryID}}</td>
 	</tr>
 {{end}}
 </table>

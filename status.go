@@ -1,6 +1,8 @@
 package jobrunner
 
 import (
+	"encoding/json"
+	"net/http"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -47,6 +49,34 @@ func StatusJson() map[string]interface{} {
 		"jobrunner": StatusPage(),
 	}
 
+}
+
+type JobToRunNow struct {
+	JobID int `json:"job_id"`
+}
+
+type JsonError struct {
+	Error string `json:"error"`
+	Code  string `json:"code"`
+}
+
+func HandleRunJob(req *http.Request, w http.ResponseWriter) {
+	var args JobToRunNow
+	err := json.NewDecoder(req.Body).Decode(&args)
+	if err != nil {
+		b, _ := json.Marshal(JsonError{
+			Error: "decode failed",
+			Code:  "1",
+		})
+		_, _ = w.Write(b)
+	}
+
+	StartJobNow(cron.EntryID(args.JobID))
+}
+
+func StartJobNow(id cron.EntryID) {
+	j := MainCron.Entry(id).Job.(*Job)
+	go j.Run()
 }
 
 func AddJob(job cron.Job) *Job {
